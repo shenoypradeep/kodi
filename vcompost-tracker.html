@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vermi Bed Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f4f6f3;
+        color: #222;
+    }
+
+    header {
+        padding: 16px;
+        text-align: center;
+        background: #2f5d3a;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .container {
+        padding: 12px;
+        max-width: 600px;
+        margin: auto;
+    }
+
+    .bed {
+        background: #fff;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    input {
+        padding: 8px;
+        font-size: 0.95rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .days {
+        font-weight: 600;
+        color: #1b7a3d;
+        margin-top: 6px;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+    }
+
+    button {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .delete {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .add {
+        width: 100%;
+        margin-top: 12px;
+        background: #2f5d3a;
+        color: white;
+        font-size: 0.95rem;
+        padding: 10px;
+    }
+
+    footer {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #555;
+        padding: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<header>Vermi Compost Bed Tracker</header>
+
+<div class="container" id="bedList"></div>
+
+<div class="container">
+    <button class="add" onclick="addBed()">+ Add Bed</button>
+</div>
+
+<footer>Auto-calculates days · Works offline</footer>
+
+<script>
+    const STORAGE_KEY = "vermiBeds";
+
+    let beds = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+        { name: "Bed 1", date: "2025-12-10" },
+        { name: "Bed 2", date: "2025-12-21" },
+        { name: "Bed 3", date: "2026-01-26" },
+        { name: "Bed 4", date: "2026-02-08" }
+    ];
+
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(beds));
+        render();
+    }
+
+    function daysSince(date) {
+        const today = new Date();
+        const d = new Date(date);
+        const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+        return diff >= 0 ? diff + " days" : "Not laid yet";
+    }
+
+    function render() {
+        const list = document.getElementById("bedList");
+        list.innerHTML = "";
+
+        beds.forEach((bed, i) => {
+            const div = document.createElement("div");
+            div.className = "bed";
+
+            div.innerHTML = `
+                <div class="row">
+                    <input type="text" value="${bed.name}"
+                        onchange="beds[${i}].name=this.value; save()">
+
+                    <input type="date" value="${bed.date}"
+                        onchange="beds[${i}].date=this.value; save()">
+
+                    <div class="days">${daysSince(bed.date)}</div>
+
+                    <div class="actions">
+                        <button class="delete" onclick="deleteBed(${i})">Delete</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function addBed() {
+        beds.push({
+            name: `Bed ${beds.length + 1}`,
+            date: new Date().toISOString().split("T")[0]
+        });
+        save();
+    }
+
+    function deleteBed(index) {
+        beds.splice(index, 1);
+        save();
+    }
+
+    render();
+</script>
+
+</body>
+</html>
