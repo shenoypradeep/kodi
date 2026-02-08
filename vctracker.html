@@ -192,7 +192,7 @@ function render() {
         let stage = { cls: "fresh", label: "Not started" };
 
         if (age) {
-            ageText = `${age.months}m ${age.days}d`;
+            ageText = `${age.months} month, ${age.days}days`;
             stage = maturityStage(age.months);
         }
 
