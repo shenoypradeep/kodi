@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vermi Bed Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f1f3f1;
+        color: #222;
+    }
+
+    header {
+        padding: 14px;
+        text-align: center;
+        background: #2f5d3a;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .container {
+        padding: 12px;
+        max-width: 680px;
+        margin: auto;
+    }
+
+    .bed-card {
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    /* maturity colors */
+    .fresh { background: #eeeeee; }
+    .active { background: #e3f2fd; }
+    .maturing { background: #fff3cd; }
+    .ready { background: #e6f4ea; }
+
+    .bed-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .bed-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    .stage {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        background: rgba(0,0,0,0.08);
+    }
+
+    .age {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 6px 0;
+    }
+
+    .date {
+        font-size: 0.8rem;
+        opacity: 0.75;
+    }
+
+    .inputs {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    input {
+        flex: 1;
+        padding: 6px;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        border: 1px solid #bbb;
+    }
+
+    .actions {
+        text-align: right;
+        margin-top: 8px;
+    }
+
+    button {
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+    }
+
+    .delete {
+        background: #d9534f;
+        color: white;
+    }
+
+    .add {
+        width: 100%;
+        background: #2f5d3a;
+        color: white;
+        padding: 12px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+        margin-top: 12px;
+    }
+
+    footer {
+        text-align: center;
+        font-size: 0.75rem;
+        padding: 10px;
+        color: #555;
+    }
+</style>
+</head>
+
+<body>
+
+<header>Vermi Compost Bed Tracker</header>
+
+<div class="container" id="bedList"></div>
+
+<div class="container">
+    <button class="add" onclick="addBed()">+ Add Bed</button>
+</div>
+
+<footer>Cards · Colour = maturity · Mobile-first</footer>
+
+<script>
+const STORAGE_KEY = "vermiBeds";
+
+let beds = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+    { name: "Bed 1", date: "2025-12-10" },
+    { name: "Bed 2", date: "2025-12-21" },
+    { name: "Bed 3", date: "2026-01-26" },
+    { name: "Bed 4", date: "2026-02-08" }
+];
+
+function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(beds));
+    render();
+}
+
+function calculateAge(dateStr) {
+    const start = new Date(dateStr);
+    const today = new Date();
+    if (today < start) return null;
+
+    let months =
+        (today.getFullYear() - start.getFullYear()) * 12 +
+        (today.getMonth() - start.getMonth());
+
+    let days = today.getDate() - start.getDate();
+    if (days < 0) {
+        months--;
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        days += prevMonth.getDate();
+    }
+    return { months, days };
+}
+
+function maturityStage(months) {
+    if (months < 1) return { cls: "fresh", label: "Fresh" };
+    if (months < 2) return { cls: "active", label: "Active" };
+    if (months < 3) return { cls: "maturing", label: "Maturing" };
+    return { cls: "ready", label: "Ready" };
+}
+
+function render() {
+    const list = document.getElementById("bedList");
+    list.innerHTML = "";
+
+    beds.forEach((bed, i) => {
+        const age = calculateAge(bed.date);
+        let ageText = "Not laid yet";
+        let stage = { cls: "fresh", label: "Not started" };
+
+        if (age) {
+            ageText = `${age.months}m ${age.days}d`;
+            stage = maturityStage(age.months);
+        }
+
+        const card = document.createElement("div");
+        card.className = `bed-card ${stage.cls}`;
+
+        card.innerHTML = `
+            <div class="bed-header">
+                <div class="bed-name">${bed.name}</div>
+                <div class="stage">${stage.label}</div>
+            </div>
+
+            <div class="age">Age: ${ageText}</div>
+            <div class="date">Laid on: ${bed.date}</div>
+
+            <div class="inputs">
+                <input type="text" value="${bed.name}"
+                    onchange="beds[${i}].name=this.value; save()">
+                <input type="date" value="${bed.date}"
+                    onchange="beds[${i}].date=this.value; save()">
+            </div>
+
+            <div class="actions">
+                <button class="delete" onclick="deleteBed(${i})">Delete</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+function addBed() {
+    beds.push({
+        name: `Bed ${beds.length + 1}`,
+        date: new Date().toISOString().split("T")[0]
+    });
+    save();
+}
+
+function deleteBed(index) {
+    beds.splice(index, 1);
+    save();
+}
+
+render();
+</script>
+
+</body>
+</html>

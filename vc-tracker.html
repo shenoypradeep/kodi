@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vermi Compost Bed Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f6f8f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2f5d3a;
+        }
+
+        table {
+            width: 100%;
+            max-width: 700px;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #2f5d3a;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .days {
+            font-weight: bold;
+            color: #1b7a3d;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Vermi Compost Bed Tracker</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Bed</th>
+            <th>Date Laid</th>
+            <th>Days Since Laid</th>
+        </tr>
+    </thead>
+    <tbody id="bedTable">
+        <!-- Rows populated by JavaScript -->
+    </tbody>
+</table>
+
+<div class="footer">
+    Automatically updates based on today’s date
+</div>
+
+<script>
+    const beds = [
+        { name: "Bed 1", date: "2025-12-10" },
+        { name: "Bed 2", date: "2025-12-21" },
+        { name: "Bed 3", date: "2026-01-26" },
+        { name: "Bed 4", date: "2026-02-08" }
+        // Bed 5 intentionally left free for future use
+    ];
+
+    const today = new Date();
+    const tableBody = document.getElementById("bedTable");
+
+    beds.forEach(bed => {
+        const laidDate = new Date(bed.date);
+        const diffTime = today - laidDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${bed.name}</td>
+            <td>${laidDate.toDateString()}</td>
+            <td class="days">${diffDays >= 0 ? diffDays : "Not laid yet"}</td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+</script>
+
+</body>
+</html>
