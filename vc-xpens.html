@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expense Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f2f4f2;
+    color: #222;
+}
+
+header {
+    padding: 14px;
+    text-align: center;
+    background: #2f5d3a;
+    color: #fff;
+    font-weight: 600;
+}
+
+.container {
+    padding: 12px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.column {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.column h2 {
+    font-size: 1rem;
+    margin: 0 0 6px 0;
+}
+
+.batch {
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+}
+
+.expense {
+    border-bottom: 1px solid #ddd;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    user-select: none;
+}
+
+.expense:last-child {
+    border-bottom: none;
+}
+
+.total {
+    margin-top: auto;
+    font-weight: 700;
+    padding-top: 8px;
+    border-top: 2px solid #2f5d3a;
+}
+
+button {
+    margin-top: 8px;
+    padding: 8px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.add {
+    background: #2f5d3a;
+    color: white;
+}
+
+.grand {
+    margin-top: 14px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.export {
+    background: #444;
+    color: white;
+    margin-top: 10px;
+}
+
+footer {
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 10px;
+    color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<header>Expense Tracker</header>
+
+<div class="container">
+    <div class="grid">
+
+        <!-- One-time -->
+        <div class="column">
+            <h2>One-time Expenses</h2>
+            <div id="oneTime"></div>
+            <button class="add" onclick="addExpense('oneTime')">+ Add Expense</button>
+            <div class="total" id="oneTimeTotal">Total: ₹0</div>
+        </div>
+
+        <!-- Recurring -->
+        <div class="column">
+            <h2>Recurring Expenses</h2>
+            <div class="batch">
+                Batch:
+                <select onchange="setBatch(this.value)">
+                    <option>Batch 1</option>
+                    <option>Batch 2</option>
+                    <option>Batch 3</option>
+                </select>
+            </div>
+            <div id="recurring"></div>
+            <button class="add" onclick="addExpense('recurring')">+ Add Expense</button>
+            <div class="total" id="recurringTotal">Total: ₹0</div>
+        </div>
+
+    </div>
+
+    <div class="grand" id="grandTotal">Grand Total: ₹0</div>
+    <button class="export" onclick="exportCSV()">Export CSV</button>
+</div>
+
+<footer>Long-press expense to edit / delete · Offline</footer>
+
+<script>
+const STORAGE_KEY = "expenseTracker";
+const LONG_PRESS = 600;
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+    batch: "Batch 1",
+    oneTime: [],
+    recurring: []
+};
+
+function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+}
+
+function setBatch(batch) {
+    state.batch = batch;
+    save();
+}
+
+function addExpense(type) {
+    const date = prompt("Date (YYYY-MM-DD):", new Date().toISOString().split("T")[0]);
+    if (!date) return;
+
+    const desc = prompt("Expense (whom / what for):");
+    if (!desc) return;
+
+    const amount = parseFloat(prompt("Amount:"));
+    if (isNaN(amount)) return;
+
+    state[type].push({ date, desc, amount, batch: state.batch });
+    save();
+}
+
+function renderList(id, items, filterBatch = false) {
+    const el = document.getElementById(id);
+    el.innerHTML = "";
+    let total = 0;
+
+    items.forEach((e, i) => {
+        if (filterBatch && e.batch !== state.batch) return;
+        total += e.amount;
+
+        const div = document.createElement("div");
+        div.className = "expense";
+        let timer;
+
+        div.addEventListener("touchstart", () => {
+            timer = setTimeout(() => editExpense(items, i), LONG_PRESS);
+        });
+        div.addEventListener("touchend", () => clearTimeout(timer));
+        div.addEventListener("mousedown", () => {
+            timer = setTimeout(() => editExpense(items, i), LONG_PRESS);
+        });
+        div.addEventListener("mouseup", () => clearTimeout(timer));
+
+        div.innerHTML = `
+            <strong>${e.desc}</strong><br>
+            ${e.date} · ₹${e.amount.toFixed(2)}
+        `;
+        el.appendChild(div);
+    });
+
+    return total;
+}
+
+function editExpense(list, index) {
+    const e = list[index];
+    const action = prompt("Edit (e) or Delete (d)?", "e");
+    if (action === "d") {
+        list.splice(index, 1);
+    } else if (action === "e") {
+        e.desc = prompt("Expense:", e.desc) || e.desc;
+        e.amount = parseFloat(prompt("Amount:", e.amount)) || e.amount;
+        e.date = prompt("Date:", e.date) || e.date;
+    }
+    save();
+}
+
+function render() {
+    const one = renderList("oneTime", state.oneTime);
+    const rec = renderList("recurring", state.recurring, true);
+
+    document.getElementById("oneTimeTotal").innerText = `Total: ₹${one.toFixed(2)}`;
+    document.getElementById("recurringTotal").innerText = `Total: ₹${rec.toFixed(2)}`;
+    document.getElementById("grandTotal").innerText =
+        `Grand Total: ₹${(one + rec).toFixed(2)}`;
+}
+
+function exportCSV() {
+    let rows = [["Type","Batch","Date","Expense","Amount"]];
+    [...state.oneTime.map(e => ["One-time","",e.date,e.desc,e.amount]),
+     ...state.recurring.map(e => ["Recurring",e.batch,e.date,e.desc,e.amount])]
+     .forEach(r => rows.push(r));
+
+    const csv = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "expenses.csv";
+    a.click();
+}
+
+render();
+</script>
+
+</body>
+</html>
