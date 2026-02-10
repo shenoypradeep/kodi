@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>vc-Expense Tracker</title>
+<title>vcExpense Tracker</title>
 
 <style>
   body { margin:0; font-family:system-ui,sans-serif; background:#f6f7f8; padding:12px; }
@@ -72,7 +72,8 @@
 </div>
 
 <script>
-let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+// Start empty by design; data comes only via Excel import or manual entry
+let expenses = [];
 
 function openModal(exp=null) {
   document.getElementById('date').value = exp?.date || new Date().toISOString().slice(0,10);
@@ -97,7 +98,22 @@ function saveExpense(){
   } else {
     expenses.push({id:crypto.randomUUID(),date,desc,amt,type});
   }
-  persist(); closeModal();
+  render(); closeModal();
+}
+
+function deleteExpense(id){
+  if(confirm('Delete this expense?')){
+    expenses = expenses.filter(e => e.id !== id);
+    persist();
+  }
+}
+
+function clearAll(){
+  if(confirm('This will delete ALL expenses. Continue?')){
+    expenses = [];
+    localStorage.removeItem('expenses');
+    render();
+  }
 }
 
 function deleteExpense(id){ if(confirm('Delete this expense?')){ expenses=expenses.filter(e=>e.id!==id); persist(); } }
