@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>vcExpense Tracker</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f6f7f8;
+    padding: 12px;
+  }
+
+  h2 {
+    margin: 8px 0;
+    font-size: 18px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    background: #1f2937;
+    color: #fff;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .column {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .expense {
+    background: #f1f3f5;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .amount {
+    font-weight: 600;
+  }
+
+  .total {
+    font-weight: 700;
+    margin-top: 6px;
+  }
+
+  .footer {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+  }
+
+  /* Modal */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 320px;
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .modal-content input,
+  .modal-content select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .secondary {
+    background: #9ca3af;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="controls">
+  <button onclick="openModal()">+ Add Expense</button>
+  <button onclick="exportCSV()">⬇ Export</button>
+</div>
+
+<div class="container">
+  <div class="column">
+    <h2>One-time Expenses</h2>
+    <div id="oneTimeList"></div>
+    <div class="total">Total: ₹<span id="oneTimeTotal">0</span></div>
+  </div>
+
+  <div class="column">
+    <h2>Recurring (Batch 1)</h2>
+    <div id="recurringList"></div>
+    <div class="total">Total: ₹<span id="recurringTotal">0</span></div>
+  </div>
+</div>
+
+<div class="footer">
+  Data stored locally on this device
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <input type="date" id="date" />
+    <input type="text" id="desc" placeholder="Expense for / whom" />
+    <input type="number" id="amt" placeholder="Amount" />
+    <select id="type">
+      <option value="oneTime">One-time</option>
+      <option value="recurring">Recurring (Batch 1)</option>
+    </select>
+
+    <div class="modal-actions">
+      <button onclick="saveExpense()">Save</button>
+      <button class="secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+function openModal() {
+  document.getElementById("date").value =
+    new Date().toISOString().slice(0,10);
+  document.getElementById("desc").value = "";
+  document.getElementById("amt").value = "";
+  document.getElementById("type").value = "oneTime";
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+function saveExpense() {
+  const date = document.getElementById("date").value;
+  const desc = document.getElementById("desc").value.trim();
+  const amt = parseFloat(document.getElementById("amt").value);
+  const type = document.getElementById("type").value;
+
+  if (!date || !desc || isNaN(amt)) return;
+
+  expenses.push({ date, desc, amt, type });
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+  closeModal();
+  render();
+}
+
+function render() {
+  const oneList = document.getElementById("oneTimeList");
+  const recList = document.getElementById("recurringList");
+
+  oneList.innerHTML = "";
+  recList.innerHTML = "";
+
+  let oneTotal = 0;
+  let recTotal = 0;
+
+  expenses.forEach(e => {
+    const div = document.createElement("div");
+    div.className = "expense";
+    div.innerHTML = `
+      <div>${e.date}</div>
+      <div>${e.desc}</div>
+      <div class="amount">₹${e.amt}</div>
+    `;
+
+    if (e.type === "oneTime") {
+      oneTotal += e.amt;
+      oneList.appendChild(div);
+    } else {
+      recTotal += e.amt;
+      recList.appendChild(div);
+    }
+  });
+
+  document.getElementById("oneTimeTotal").textContent = oneTotal;
+  document.getElementById("recurringTotal").textContent = recTotal;
+}
+
+function exportCSV() {
+  if (!expenses.length) return alert("No expenses to export");
+
+  let csv = "Date,Type,Description,Amount\n";
+  expenses.forEach(e => {
+    csv += `${e.date},${e.type},${e.desc},${e.amt}\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `expense-tracker-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+render();
+</script>
+
+</body>
+</html>
