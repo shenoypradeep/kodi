@@ -1,1 +1,265 @@
-<h> Jai Shree Santana Gopala Krishna </h>
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior:smooth;">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Kodi | Vedic Space</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+:root{
+
+--primary-blue:#1e3a8a;
+--deep-blue:#1e40af;
+
+--accent-gold:#f59e0b;
+--light-gold:#fbbf24;
+
+--white:#ffffff;
+--text-gray:#cbd5f5;
+
+}
+
+body{
+
+font-family:'Inter',sans-serif;
+
+color:var(--white);
+
+background:linear-gradient(135deg,var(--primary-blue) 0%,var(--deep-blue) 100%);
+
+min-height:100vh;
+
+}
+
+.serif{
+font-family:'Playfair Display',serif;
+}
+
+.sanskrit{
+font-family:'Noto Sans Devanagari',sans-serif;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:40px 20px;
+}
+
+header{
+text-align:center;
+padding-top:40px;
+}
+
+h1{
+font-size:42px;
+margin-bottom:10px;
+}
+
+.subtitle{
+color:var(--text-gray);
+font-size:18px;
+}
+
+.divider{
+
+width:80px;
+height:3px;
+
+background:var(--light-gold);
+
+margin:25px auto 40px auto;
+
+border-radius:2px;
+
+}
+
+/* shrine layout */
+
+.shrine{
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+gap:60px;
+
+flex-wrap:wrap;
+
+margin-top:40px;
+
+}
+
+/* parents */
+
+.person{
+
+text-align:center;
+
+}
+
+.person img{
+
+width:230px;
+
+border-radius:22px;
+
+border:2px solid rgba(255,215,0,0.4);
+
+box-shadow:0 15px 40px rgba(0,0,0,0.5);
+
+}
+
+.person-name{
+
+margin-top:12px;
+
+font-size:18px;
+
+color:var(--light-gold);
+
+}
+
+/* deity */
+
+.deity img{
+
+width:380px;
+
+border-radius:28px;
+
+border:3px solid var(--light-gold);
+
+box-shadow:
+
+0 30px 60px rgba(0,0,0,0.6),
+
+0 0 40px rgba(255,215,0,0.35);
+
+}
+
+.mantra{
+
+text-align:center;
+
+margin-top:60px;
+
+font-size:22px;
+
+line-height:1.8;
+
+color:var(--light-gold);
+
+}
+
+footer{
+
+text-align:center;
+
+margin-top:80px;
+
+padding-bottom:40px;
+
+font-size:14px;
+
+color:#cbd5f5;
+
+}
+
+/* responsive */
+
+@media(max-width:768px){
+
+.shrine{
+flex-direction:column;
+gap:35px;
+}
+
+.deity img{
+width:280px;
+}
+
+.person img{
+width:180px;
+}
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<header>
+
+<h1 class="serif">Santāna Gopāla Kṛṣṇa</h1>
+
+<p class="subtitle">
+A sacred family shrine • Vedic Space
+</p>
+
+<div class="divider"></div>
+
+</header>
+
+
+<div class="container">
+
+<div class="shrine">
+
+<!-- KRS LEFT -->
+
+<div class="person">
+<img src="KRS_anim.png">
+<p class="person-name serif">K. R. Shenoy</p>
+</div>
+
+<!-- SGK CENTER -->
+
+<div class="deity">
+<img src="SGK_anim.png">
+</div>
+
+<!-- KLRS RIGHT -->
+
+<div class="person">
+<img src="KLRS_anim.png">
+<p class="person-name serif">K. L. R. Shenoy</p>
+</div>
+
+</div>
+
+
+<div class="mantra sanskrit">
+
+ॐ देवकीसुत गोविन्द वासुदेव जगत्पते ।  
+देहि मे तनयं कृष्ण त्वामहं शरणं गतः ॥
+
+</div>
+
+</div>
+
+
+<footer>
+
+Vedic Space • A Temple of Consciousness
+
+</footer>
+
+
+</body>
+</html>
